@@ -9,7 +9,7 @@ namespace CustomShell.iOS.Renderers
     {
         protected override IShellTabBarAppearanceTracker CreateTabBarAppearanceTracker()
         {
-            return base.CreateTabBarAppearanceTracker();
+            return new MyShellTabBarAppearanceTracker();
         }
     }
 }
