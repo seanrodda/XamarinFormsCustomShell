@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using CoreGraphics;
+using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 
@@ -6,60 +7,107 @@ namespace CustomShell.iOS.Renderers
 {
     public class MyShellTabBarAppearanceTracker : IShellTabBarAppearanceTracker
     {
-        UIColor _defaultBarTint;
-        UIColor _defaultTint;
-        UIColor _defaultUnselectedTint;
+        UIView _blurView;
+		UIView _colorView;
+		UIImage _defaultBackgroundImage;
+		UIColor _defaultTint;
+		UIColor _defaultUnselectedTint;
+		bool _disposed = false;
 
-        public void ResetAppearance(UITabBarController controller)
-        {
-            if (_defaultTint == null)
-                return;
+		public void ResetAppearance(UITabBarController controller)
+		{
+			if (_blurView == null)
+				return;
 
-            var tabBar = controller.TabBar;
-            tabBar.BarTintColor = _defaultBarTint;
-            tabBar.TintColor = _defaultTint;
-            tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
-        }
+			var tabBar = controller.TabBar;
+			tabBar.BackgroundImage = _defaultBackgroundImage;
+			tabBar.TintColor = _defaultTint;
+			tabBar.UnselectedItemTintColor = _defaultUnselectedTint;
 
-        public void SetAppearance(UITabBarController controller, ShellAppearance appearance)
-        {
-            IShellAppearanceElement appearanceElement = appearance;
-            var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
-            var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor; // currently unused
-            var disabledColor = appearanceElement.EffectiveTabBarDisabledColor; // unused on iOS
-            var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
-            var titleColor = appearanceElement.EffectiveTabBarTitleColor;
+			_blurView.RemoveFromSuperview();
+			_colorView.RemoveFromSuperview();
+		}
 
-            var tabBar = controller.TabBar;
+		public void SetAppearance(UITabBarController controller, ShellAppearance appearance)
+		{
+			IShellAppearanceElement el = appearance;
+			var backgroundColor = el.EffectiveTabBarBackgroundColor;
+			var foregroundColor = el.EffectiveTabBarForegroundColor;
+			var titleColor = el.EffectiveTabBarTitleColor;
+			var disabledColor = el.EffectiveTabBarDisabledColor;
+			var unselectedColor = el.EffectiveTabBarUnselectedColor;
 
-            if (_defaultTint == null)
-            {
-                _defaultBarTint = tabBar.BarTintColor;
-                _defaultTint = tabBar.TintColor;
-                _defaultUnselectedTint = tabBar.UnselectedItemTintColor;
-            }
+			var tabBar = controller.TabBar;
 
-            if (!backgroundColor.IsDefault)
-                tabBar.BarTintColor = backgroundColor.ToUIColor();
-            if (!titleColor.IsDefault)
-                tabBar.TintColor = titleColor.ToUIColor();
-            if (!unselectedColor.IsDefault)
-                tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
-        }
+			if (_blurView == null)
+			{
+				_defaultBackgroundImage = tabBar.BackgroundImage;
+				_defaultTint = tabBar.TintColor;
+				_defaultUnselectedTint = tabBar.UnselectedItemTintColor;
 
-        public void UpdateLayout(UITabBarController controller)
-        {
-        }
+				var effect = UIBlurEffect.FromStyle(UIBlurEffectStyle.Regular);
+				_blurView = new UIVisualEffectView(effect);
+				_blurView.Frame = tabBar.Bounds;
 
-        #region IDisposable Support
-        protected virtual void Dispose(bool disposing)
-        {
-        }
+				_colorView = new UIView(_blurView.Frame);
+			}
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-        #endregion
+			tabBar.BackgroundImage = new UIImage();
+
+			tabBar.InsertSubview(_colorView, 0);
+			tabBar.InsertSubview(_blurView, 0);
+
+            var button = new UIButton(UIButtonType.Custom);
+            button.SetTitle("test", UIControlState.Normal);
+            button.Frame = tabBar.Bounds;
+            button.Center = tabBar.Center;
+            tabBar.InsertSubview(button, 1);
+
+			if (!backgroundColor.IsDefault)
+				_colorView.BackgroundColor = backgroundColor.ToUIColor();
+			if (!foregroundColor.IsDefault)
+				tabBar.TintColor = foregroundColor.ToUIColor();
+			if (!unselectedColor.IsDefault)
+				tabBar.UnselectedItemTintColor = unselectedColor.ToUIColor();
+		}
+
+		public void UpdateLayout(UITabBarController controller)
+		{
+			if (_blurView != null)
+				_blurView.Frame = controller.TabBar.Bounds;
+			if (_colorView != null)
+				_colorView.Frame = _blurView.Frame;
+		}
+
+		#region IDisposable Support
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (_blurView != null)
+				{
+					_blurView.RemoveFromSuperview();
+					_blurView.Dispose();
+				}
+
+				if (_colorView != null)
+				{
+					_colorView.RemoveFromSuperview();
+					_colorView.Dispose();
+				}
+
+				_blurView = null;
+				_colorView = null;
+
+				_disposed = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+#endregion
     }
 }

@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
+    <Compile Include="Renderers\MyShellItemRenderer.cs" />
     <Compile Include="Renderers\MyShellRenderer.cs" />
     <Compile Include="Renderers\MyShellTabBarAppearanceTracker.cs" />
     <None Include="Entitlements.plist" />

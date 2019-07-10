@@ -6,6 +6,11 @@
              mc:Ignorable="d"
              x:Class="CustomShell.App">
     <Application.Resources>
-        
+        <Style TargetType="Shell" ApplyToDerivedTypes="true">
+            <Setter Property="TabBarForegroundColor" Value="Yellow"/>
+            <Setter Property="TabBarUnselectedColor" Value="LightBlue"/>
+            <Setter Property="TabBarTitleColor" Value="Red"/>
+            <Setter Property="TabBarBackgroundColor" Value="Purple"/>
+        </Style>
     </Application.Resources>
 </Application>

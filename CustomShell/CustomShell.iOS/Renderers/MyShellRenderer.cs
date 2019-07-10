@@ -11,5 +11,12 @@ namespace CustomShell.iOS.Renderers
         {
             return new MyShellTabBarAppearanceTracker();
         }
+
+        protected override IShellItemRenderer CreateShellItemRenderer(ShellItem item)
+        {
+            var renderer = new MyShellItemRenderer(this);
+            renderer.ShellItem = item;
+            return renderer;
+        }
     }
 }
